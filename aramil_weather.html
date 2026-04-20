@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Погода в Арамиле</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Raleway:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --sky-top: #b8e4f7;
+    --sky-mid: #d6eefa;
+    --sky-bottom: #eaf6fd;
+    --blue-accent: #2fa8d5;
+    --blue-deep: #1a7fa8;
+    --card-bg: rgba(255,255,255,0.62);
+    --card-border: rgba(255,255,255,0.85);
+    --text-main: #1a4d6e;
+    --text-sub: #4a90b8;
+    --text-night: #6baed6;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(170deg, var(--sky-top) 0%, var(--sky-mid) 40%, var(--sky-bottom) 100%);
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  .wrapper {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 0 0 32px 0;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1a7fa8 0%, #2fa8d5 60%, #5bc8e8 100%);
+    padding: 24px 20px 20px;
+    text-align: center;
+    border-radius: 0 0 32px 32px;
+    box-shadow: 0 6px 32px rgba(30,100,160,0.18);
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; top: -30px; right: -30px;
+    width: 130px; height: 130px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: '';
+    position: absolute; bottom: -20px; left: -20px;
+    width: 90px; height: 90px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+
+  /* Лого + подпись — колонка по центру */
+  .logo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative; z-index: 1;
+  }
+  .logo-img {
+    height: 104px;
+    width: auto;
+    filter: drop-shadow(0 2px 10px rgba(0,0,0,0.25));
+  }
+  .header-sub {
+    font-family: 'Raleway', sans-serif;
+    font-size: 24px; font-weight: 600;
+    color: white;
+    letter-spacing: 0.4px;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.15);
+    opacity: 0.95;
+  }
+
+  /* FORECAST LIST */
+  .forecast-section {
+    margin: 16px 16px 0;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .day-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--card-border);
+    border-radius: 18px;
+    padding: 15px 18px;
+    margin-bottom: 9px;
+    display: flex; align-items: center;
+    box-shadow: 0 2px 12px rgba(30,100,160,0.07);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .day-name {
+    width: 38px;
+    font-size: 15px; font-weight: 800; color: var(--text-main);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+  .day-date-small {
+    font-size: 13px; color: var(--text-sub); font-weight: 500;
+    width: 42px; text-align: left; margin-left: 2px;
+    flex-shrink: 0;
+  }
+  .day-icon-wrap {
+    flex: 0 0 42px; text-align: center;
+    font-size: 30px; line-height: 1;
+    margin: 0 6px;
+  }
+  .day-desc {
+    flex: 1; font-size: 13px; color: var(--text-sub); font-weight: 500;
+    padding: 0 4px; min-width: 0;
+  }
+  .day-temps {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .day-hi { font-size: 20px; font-weight: 800; color: var(--text-main); }
+  .day-lo { font-size: 14px; color: var(--text-night); font-weight: 600; }
+
+  .week-highlight {
+    border-color: rgba(47,168,213,0.40) !important;
+    background: rgba(255,255,255,0.80) !important;
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center; padding: 20px 16px 8px;
+    font-size: 10px; color: rgba(30,100,160,0.45);
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .loading {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-sub); font-size: 15px; font-weight: 600;
+  }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid rgba(47,168,213,0.2);
+    border-top-color: var(--blue-accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error { color: #c0392b; font-size: 14px; text-align: center; padding: 40px 20px; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="header">
+    <div class="logo-wrap">
+      <img class="logo-img" src="logo.png" alt="Герб Арамиль" id="logoImg">
+      <div class="header-sub">Прогноз погоды на 7 дней</div>
+    </div>
+  </div>
+
+  <div id="content">
+    <div class="loading">
+      <div class="spinner"></div>
+      Получаем данные о погоде…
+    </div>
+  </div>
+
+  <div class="footer">Данные: Open-Meteo.com &nbsp;•&nbsp; 56.698°N 60.837°E</div>
+</div>
+
+<script>
+const LAT = 56.6977;
+const LON = 60.8369;
+const DAYS = ['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+const MONTHS = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+
+const CACHE_KEY = 'aramil_weather_v3';
+const CACHE_TTL = 30 * 60 * 1000;
+
+// Вычисляем дату начала прогноза:
+// Если сегодня понедельник — берём сегодня.
+// Иначе — ближайший следующий понедельник.
+function getNextMonday() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dow = today.getDay(); // 0=вс, 1=пн … 6=сб
+  if (dow === 1) return today; // сегодня понедельник
+  const daysUntilMon = dow === 0 ? 1 : (8 - dow); // до след. понедельника
+  const mon = new Date(today);
+  mon.setDate(today.getDate() + daysUntilMon);
+  return mon;
+}
+
+// Разница в днях между датой ISO-строки и эталонной датой
+function dateDiffDays(isoStr, refDate) {
+  const d = new Date(isoStr);
+  d.setHours(0, 0, 0, 0);
+  return Math.round((d - refDate) / 86400000);
+}
+
+function weatherIcon(code) {
+  if (code === 0) return '☀️';
+  if (code <= 2)  return '⛅';
+  if (code === 3) return '☁️';
+  if (code <= 49) return '🌫️';
+  if (code <= 57) return '🌦️';
+  if (code <= 65) return '🌧️';
+  if (code <= 77) return '❄️';
+  if (code <= 82) return '🌦️';
+  if (code <= 86) return '🌨️';
+  if (code <= 99) return '⛈️';
+  return '🌡️';
+}
+
+function weatherDesc(code) {
+  if (code === 0) return 'Ясно';
+  if (code === 1) return 'Преим. ясно';
+  if (code === 2) return 'Перем. облачность';
+  if (code === 3) return 'Пасмурно';
+  if (code <= 49) return 'Туман';
+  if (code <= 57) return 'Морось';
+  if (code <= 65) return 'Дождь';
+  if (code <= 77) return 'Снег';
+  if (code <= 82) return 'Ливень';
+  if (code <= 86) return 'Снегопад';
+  if (code <= 99) return 'Гроза';
+  return '';
+}
+
+function fmtDate(dateStr) {
+  const d = new Date(dateStr);
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+
+function getDayName(dateStr) {
+  const d = new Date(dateStr);
+  return DAYS[d.getDay()];
+}
+
+function sign(n) { return n > 0 ? '+' : ''; }
+
+async function loadWeather() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { ts, data } = JSON.parse(cached);
+      if (Date.now() - ts < CACHE_TTL) {
+        renderWeather(data);
+        return;
+      }
+    }
+  } catch(e) {}
+
+  // Запрашиваем с запасом 16 дней, чтобы всегда перекрыть следующий понедельник + 7 дней
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Asia%2FYekaterinburg&forecast_days=16`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+    renderWeather(data);
+  } catch(e) {
+    document.getElementById('content').innerHTML =
+      `<div class="error">Не удалось загрузить данные.<br><small>${e.message}</small></div>`;
+  }
+}
+
+function renderWeather(data) {
+  const { time, temperature_2m_max, temperature_2m_min, weathercode } = data.daily;
+
+  const startDate = getNextMonday();
+
+  // Найти индекс в массиве, соответствующий нашему понедельнику
+  let startIdx = -1;
+  for (let i = 0; i < time.length; i++) {
+    if (dateDiffDays(time[i], startDate) === 0) { startIdx = i; break; }
+  }
+
+  if (startIdx === -1) {
+    document.getElementById('content').innerHTML =
+      `<div class="error">Нет данных для нужной недели. Попробуйте позже.</div>`;
+    return;
+  }
+
+  const endIdx = Math.min(startIdx + 7, time.length);
+  const slice = { time: time.slice(startIdx, endIdx), max: temperature_2m_max.slice(startIdx, endIdx), min: temperature_2m_min.slice(startIdx, endIdx), code: weathercode.slice(startIdx, endIdx) };
+
+  let rows = '';
+  for (let i = 0; i < slice.time.length; i++) {
+    const hi  = Math.round(slice.max[i]);
+    const lo  = Math.round(slice.min[i]);
+    const code = slice.code[i];
+    const cls  = i === 0 ? ' week-highlight' : '';
+
+    rows +=
+      `<div class="day-card${cls}">` +
+        `<div class="day-name">${getDayName(slice.time[i])}</div>` +
+        `<div class="day-date-small">${fmtDate(slice.time[i])}</div>` +
+        `<div class="day-icon-wrap">${weatherIcon(code)}</div>` +
+        `<div class="day-desc">${weatherDesc(code)}</div>` +
+        `<div class="day-temps">` +
+          `<div class="day-hi">${sign(hi)}${hi}°</div>` +
+          `<div class="day-lo">${sign(lo)}${lo}°</div>` +
+        `</div>` +
+      `</div>`;
+  }
+
+  document.getElementById('content').innerHTML =
+    `<div class="forecast-section">${rows}</div>`;
+}
+
+document.getElementById('logoImg').onerror = function() {
+  this.style.display = 'none';
+};
+
+loadWeather();
+</script>
+</body>
+</html>
